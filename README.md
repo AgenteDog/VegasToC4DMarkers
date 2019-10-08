@@ -11,7 +11,7 @@ Using this plugin is super easy, you only need to follow 4 steps!
 ### FAQ
 <details><summary>How to install the Plugin?</summary>
 
-> To download the plugin just go to the [Releases][https://github.com/AgenteDog/VegasToC4DMarkers/releases] tab and download the latest version. 
+> To download the plugin just go to the [Releases](https://github.com/AgenteDog/VegasToC4DMarkers/releases) tab and download the latest version. 
 > Doing this will download a "*.zip*" file.
 > To install this plugin you just have to go to your plugins folder and unzip the "*.zip*" file in there.
 
