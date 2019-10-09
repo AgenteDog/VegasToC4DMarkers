@@ -3,6 +3,12 @@
 Description-Us: Helps you export Vegas Pro markers and place them in Cinema 4D.
 """
 
+# TODO: Remove redundant `if __name__ == '__main__':` check if it was in your script
+# TODO: Remove redundant imports
+# TODO: Update Copyright information
+# TODO: Add a README file
+# TODO: Keep in mind that the variables `doc` and `op` are no longer globally available
+
 import c4d
 import os
 
@@ -15,15 +21,18 @@ def load_bitmap(path):
     return bmp
 
 
+#Made by Agente Dog - 10/9/2019 - 14 y/o
+
 import c4d
 from c4d import gui
+import xml.etree.ElementTree as ET
 
 
 
-class VegasToC4DMarkers(c4d.plugins.CommandData):
+class VegastoC4DMarkers(c4d.plugins.CommandData):
 
     PLUGIN_ID = 1053571
-    PLUGIN_NAME = 'Vegas To C4D Markers'
+    PLUGIN_NAME = 'Vegas to C4D Markers'
     PLUGIN_INFO = 0
     PLUGIN_ICON = load_bitmap('res/icons/vegas-to-c4d-markers.png')
     PLUGIN_HELP = ''
@@ -33,8 +42,6 @@ class VegasToC4DMarkers(c4d.plugins.CommandData):
             self.PLUGIN_ID, self.PLUGIN_NAME, self.PLUGIN_INFO, self.PLUGIN_ICON,
             self.PLUGIN_HELP, self)
 
-    #Welcome to the world of Python
-
     def Execute(self, doc):
 
         #Input xml file location and check if it is an xml file (or if the file exists)
@@ -42,11 +49,10 @@ class VegasToC4DMarkers(c4d.plugins.CommandData):
         if file_loc == '':
             print("Canceled")
 
-        elif file_loc.endswith(".xml") == False:
+        elif not file_loc.endswith(".xml"):
             gui.MessageDialog('The file you inputed does not end with ".xml"')
 
         else:
-            import xml.etree.ElementTree as ET
             try:
                 tree = ET.parse(file_loc)
             except:
@@ -54,7 +60,7 @@ class VegasToC4DMarkers(c4d.plugins.CommandData):
             tree = ET.parse(file_loc)
             root = tree.getroot()
 
-
+            print("Parsing...")
             #Parse sequence info
             sequences = []
             sequence = {}
@@ -96,13 +102,22 @@ class VegasToC4DMarkers(c4d.plugins.CommandData):
                 # Parse Markers Info
                 markers_found = 0
                 frames = ''
+                marker_names = ''
 
                 for markers in root.findall('project/children/sequence/marker'):
                     markers_found = markers_found + 1
+
+                    #Parse frames in wich markers are
                     frame = markers.find('in').text
                     frame = str(frame)
                     frames = frames + frame + ','
+
+                    #Assign names to the markers
+                    marker_names = marker_names + str(markers_found) + ','
+
+
                 frames = frames[:-1]
+                marker_names = marker_names[:-1]
                 if frames == '':
                     gui.MessageDialog("It seems like this project has no markers...")
                 else:
@@ -114,28 +129,26 @@ class VegasToC4DMarkers(c4d.plugins.CommandData):
                     info['MarkerFrames'] = frames
                     all_info.append(info)
                     frames = frames.split(',')
+                    marker_names = marker_names.split(',')
+                print("Done parsing!")
 
                 # Start using all the info to create markers
+                #Also check if the fps on the c4d project is the same as in the vegas project. If not asks if you would like to change it.
                 fps = doc[c4d.DOCUMENT_FPS]
-                #Check if the fps on the c4d project is the same as in the vegas project. If not asks if you would like to change it.
                 if fps != float(sequence_rate):
                     change_rate = gui.QuestionDialog("The project framerate is not the same as the Vegas framerate! (" + sequence_rate + ") Would you like to change it? \n \n" + "Yes: Changes fps to " + sequence_rate + " and places all markers. \n" + "No: Cancels the operation.")
                     if change_rate == True:
                         sequence_rate = int(sequence_rate)
                         doc[c4d.DOCUMENT_FPS] = sequence_rate
+
                         #Open timeline window and start puttings marks
+                        print("Placing markers...")
                         c4d.CallCommand(465001541, 465001541) # Timeline (Dope Sheet)...
-                        for info in frames:
+                        for info, name in zip(frames, marker_names):
                             frame = float(info)
                             Time = c4d.BaseTime(frame,fps)
-                            doc.SetTime(Time)
-                            c4d.EventAdd()
-                            c4d.CallCommand(465001124, 465001124) # Create Marker at Current Frame
-                        frame = float(info)
-                        Time = c4d.BaseTime(0,fps)
-                        doc.SetTime(Time)
-                        c4d.EventAdd()
-                        print("done!")
+                            c4d.documents.AddMarker(doc, None, Time, name)
+                        print("Done!")
                     else:
                         c4d.CallCommand(12373) # Project Settings...
 
@@ -143,16 +156,16 @@ class VegasToC4DMarkers(c4d.plugins.CommandData):
                 else:
 
                     #Open timeline window and start puttings marks
+                    print("Placing markers...")
                     c4d.CallCommand(465001541, 465001541) # Open Timeline (Dope Sheet)...
-                    for info in frames:
+                    for info, name in zip(frames, marker_names):
                         frame = float(info)
                         Time = c4d.BaseTime(frame,fps)
-                        doc.SetTime(Time)
-                        c4d.EventAdd()
-                        c4d.CallCommand(465001124, 465001124) # Create Marker at Current Frame
-                    frame = float(info)
-                    Time = c4d.BaseTime(0,fps)
-                    doc.SetTime(Time)
-                    c4d.EventAdd()
+                        c4d.documents.AddMarker(doc, None, Time, name)
                     print("Done!")
+
         return True
+
+
+if __name__ == '__main__':
+    VegastoC4DMarkers().Register()
