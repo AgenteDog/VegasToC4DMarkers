@@ -1,4 +1,4 @@
-# VegasToC4DMarkers
+# Vegas To C4D Markers
 Take markers from Vegas Pro and put them on Cinema 4D.
 
 Using this plugin is super easy, you only need to follow 4 steps!
