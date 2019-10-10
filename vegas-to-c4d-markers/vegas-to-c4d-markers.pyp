@@ -3,12 +3,6 @@
 Description-Us: Helps you export Vegas Pro markers and place them in Cinema 4D.
 """
 
-# TODO: Remove redundant `if __name__ == '__main__':` check if it was in your script
-# TODO: Remove redundant imports
-# TODO: Update Copyright information
-# TODO: Add a README file
-# TODO: Keep in mind that the variables `doc` and `op` are no longer globally available
-
 import c4d
 import os
 
